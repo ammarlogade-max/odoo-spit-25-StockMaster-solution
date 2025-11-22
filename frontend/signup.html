@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - StockMaster</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .card-shadow {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .input-focus:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- Logo/Title -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">📦 StockMaster</h1>
+            <p class="text-purple-100">Create Your Account</p>
+        </div>
+
+        <!-- Signup Card -->
+        <div class="bg-white rounded-2xl card-shadow p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Sign Up</h2>
+            
+            <!-- Alert Box -->
+            <div id="alert" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
+            
+            <form id="signupForm" class="space-y-4">
+                <!-- Username -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Username</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        required
+                        minlength="3"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus transition duration-200 outline-none"
+                        placeholder="Choose a username"
+                    >
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus transition duration-200 outline-none"
+                        placeholder="your@email.com"
+                    >
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        required
+                        minlength="6"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus transition duration-200 outline-none"
+                        placeholder="Minimum 6 characters"
+                    >
+                </div>
+
+                <!-- Confirm Password -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Confirm Password</label>
+                    <input 
+                        type="password" 
+                        id="confirmPassword" 
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus transition duration-200 outline-none"
+                        placeholder="Re-enter password"
+                    >
+                </div>
+
+                <!-- Submit Button -->
+                <button 
+                    type="submit" 
+                    class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition duration-300 shadow-md"
+                >
+                    Create Account
+                </button>
+            </form>
+
+            <!-- Divider -->
+            <div class="mt-6 text-center text-gray-600">
+                Already have an account? 
+                <a href="login.html" class="text-purple-600 font-semibold hover:underline">Sign In</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost/odoo-spit-25-stockmaster/backend/api';
+
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Client-side validation
+            if (password !== confirmPassword) {
+                showAlert('error', 'Passwords do not match');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/auth.php?action=signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password, confirmPassword })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('success', data.message + ' Redirecting to login...');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    showAlert('error', data.message);
+                }
+            } catch (error) {
+                showAlert('error', 'Connection error. Make sure XAMPP is running.');
+            }
+        });
+
+        function showAlert(type, message) {
+            const alert = document.getElementById('alert');
+            alert.className = `mb-4 p-3 rounded-lg text-sm ${
+                type === 'success' 
+                    ? 'bg-green-100 text-green-700 border border-green-300' 
+                    : 'bg-red-100 text-red-700 border border-red-300'
+            }`;
+            alert.textContent = message;
+            alert.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
