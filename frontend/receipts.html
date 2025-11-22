@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipts - StockMaster</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Page Header -->
+    <div class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1 class="page-title">📥 Stock Receipts</h1>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <span id="user-name" style="font-weight: 600;"></span>
+                <button class="btn btn-danger" id="logout-btn">🚪 Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div style="background: white; padding: 1rem 2rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem;">
+        <nav style="display: flex; gap: 2rem;">
+            <a href="index.html" style="color: var(--text-secondary); text-decoration: none;">📊 Dashboard</a>
+            <a href="products.html" style="color: var(--text-secondary); text-decoration: none;">📦 Products</a>
+            <a href="receipts.html" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">📥 Receipts</a>
+            <a href="deliveries.html" style="color: var(--text-secondary); text-decoration: none;">📤 Deliveries</a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <div class="section-header">
+            <h2>All Receipts</h2>
+            <button class="btn btn-primary" id="add-receipt-btn">➕ Add Receipt</button>
+        </div>
+
+        <!-- Receipts Table -->
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Product</th>
+                        <th>Quantity Received</th>
+                        <th>Reference</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="receipts-table-body">
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem;">Loading receipts...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Receipt Modal -->
+    <div id="receipt-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 2rem; border-radius: 1rem; width: 90%; max-width: 500px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3>Add Stock Receipt</h3>
+                <button onclick="closeReceiptModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">✕</button>
+            </div>
+            
+            <form id="receipt-form">
+                <div class="form-group">
+                    <label>Product *</label>
+                    <select id="receipt-product" required>
+                        <option value="">Select Product</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Quantity Received *</label>
+                    <input type="number" id="receipt-quantity" min="1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Reference/PO Number</label>
+                    <input type="text" id="receipt-reference" placeholder="e.g., PO-12345">
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeReceiptModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Add Receipt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        // Load products for dropdown
+        async function loadProductsDropdown() {
+            try {
+                const response = await fetch('http://localhost/odoo-spit-25-stockmaster/backend/api/products.php');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('receipt-product');
+                    select.innerHTML = '<option value="">Select Product</option>';
+                    
+                    data.data.forEach(product => {
+                        const option = document.createElement('option');
+                        option.value = product.id;
+                        option.textContent = `${product.name} (${product.sku}) - Stock: ${product.quantity}`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
+            }
+        }
+        
+        // Show/hide modal
+        document.getElementById('add-receipt-btn').addEventListener('click', function() {
+            loadProductsDropdown();
+            document.getElementById('receipt-modal').style.display = 'flex';
+        });
+        
+        function closeReceiptModal() {
+            document.getElementById('receipt-modal').style.display = 'none';
+            document.getElementById('receipt-form').reset();
+        }
+        
+        // Handle form submission
+        document.getElementById('receipt-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                product_id: parseInt(document.getElementById('receipt-product').value),
+                quantity: parseInt(document.getElementById('receipt-quantity').value),
+                reference: document.getElementById('receipt-reference').value
+            };
+            
+            try {
+                const response = await fetch('http://localhost/odoo-spit-25-stockmaster/backend/api/receipts.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Receipt added successfully! Stock updated.', 'success');
+                    closeReceiptModal();
+                    loadReceipts();
+                } else {
+                    showToast(data.message || 'Failed to add receipt', 'error');
+                }
+            } catch (error) {
+                showToast('Connection error', 'error');
+            }
+        });
+    </script>
+</body>
+</html>
