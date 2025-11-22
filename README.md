@@ -28,4 +28,27 @@ A modern, full-stack inventory management system built for the ODOO SPIT Hackath
 - Git for version control
 
 ## 📁 Project Structure
+odoo-spit-25-stockmaster/
+├── backend/
+│ └── api/
+│ ├── auth.php # Authentication endpoints
+│ ├── dashboard.php # Dashboard KPIs
+│ ├── products.php # Product CRUD
+│ ├── receipts.php # Stock receipt management
+│ ├── deliveries.php # Stock delivery management
+│ └── low_stock.php # Low stock alerts
+├── frontend/
+│ ├── css/
+│ ├── js/
+│ ├── index.html # Dashboard page
+│ ├── login.html # Login page
+│ ├── signup.html # Signup page
+│ ├── products.html # Products management
+│ ├── receipts.html # Receipts page
+│ └── deliveries.html # Deliveries page
+├── db.php # Database connection
+├── init.sql # Database initialization
+├── .gitignore
+└── README.md
+
 
